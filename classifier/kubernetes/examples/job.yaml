@@ -1,0 +1,65 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+    name: train_nn
+spec:
+template:
+    spec:
+        restartPolicy: Never
+        containers:
+            - name: train_nn
+                image: docker.io/ctvqfq/bunny_ai:classifier
+                command: ["/bin/sh", "-c"]
+                args: ["cd /develop/code/classifier; \
+                        torchrun \
+                        --nnodes 1 \
+                        --nproc_per_node 2 \
+                        --max_restarts 0 \
+                        main.py \
+                        --config configs/params.yaml \
+                        --arch 0 \
+                        --deploy 0 \
+                        --test /develop/data/cifar/test \
+                        --valid /develop/data/cifar/valid \
+                        --valid /develop/data/cifar/train \
+                        --results /develop/results/cifar/0"]
+            resources:
+                limits:
+                    memory: 100G
+                    cpu: 30
+                    nvidia.com/gpu: 2
+                requests:
+                    memory: 50G
+                    cpu: 30
+                    nvidia.com/gpu: 2
+                    
+            volumeMounts:
+                - name: classifier-results
+                  mountPath: /develop/results
+                - name: classifier-data
+                  mountPath: /develop/data
+                - name: classifier-code
+                  mountPath: /develop/data
+
+        volumes:
+            - name: classifier-results
+              persistentVolumeClaim:
+                claimName: classifier-results
+
+            - name: classifier-data
+              persistentVolumeClaim:
+                claimName: classifier-data
+
+            - name: classifier-code
+              persistentVolumeClaim:
+                claimName: classifier-code
+
+        affinity:
+            nodeAffinity:
+                requiredDuringSchedulingIgnoredDuringExecution:
+                    nodeSelectorTerms:
+                        - matchExpressions:
+                            - key: nvidia.com/gpu.product
+                              operator: In
+                              values:
+                                - NVIDIA-GeForce-RTX-3090 

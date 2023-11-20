@@ -1,0 +1,119 @@
+# Author: MINDFUL
+# Purpose: Deep Learning Experiments
+
+#--------------------------------
+# Parameters: Computing System
+#--------------------------------
+
+system: 
+
+    # seed: deterministic randomization for reproducability
+    # - flag: signal to enable / disable
+    # - sequence: unique identifier
+
+    seed: {"flag": 0, "sequence": 123}
+
+    # gpu_config: GPU configuration, formatted as [On (1) / Off (0), GPU indices]
+    # num_workers: CPU workers for explicit data retrival. (set <= number cpu_cores)
+
+    num_workers: 8
+
+    gpus:     
+        enable: 1
+
+#--------------------------------
+# Parameters: Dataset Specifics
+#--------------------------------
+
+dataset: 
+
+    # num_classes: number of supervised classes
+
+    num_classes: 2
+
+    # batch_size: sample group size of for network processing
+
+    #batch_size: 64
+    batch_size: 16
+
+    # sample_shape: decides aspects of nerual system based off of shape (c, h, w)
+    # - if interpolation below is "1" then it will transform to this spatial shape
+
+    sample_shape: [3, 224, 224]
+
+    # transforms: problem defined data augmentations
+    # - 0: normalization, and standardization to range [-1, 1]
+    # - 1: random shifting, cropping, noise, and brightness for training (as well as "0" transforms)
+    # - 2: center cropping for testing (as well as "0" transforms)
+
+    transforms: 1
+
+    # interpolate: adds a resize-like transform to the chosen set of transforms above based on sample shape above
+
+    interpolate: 1
+
+    # use_subset: use percent of observations per class of the original dataste
+    # - enable: flag for enabling the subset creation
+    # - percent: percent of observations to use per class
+ 
+    use_subset:
+      enable: 1
+      percent: 10
+
+#--------------------------------
+# Parameters: Deep Learning Model
+#--------------------------------
+
+network:
+
+    # log_rate: how often to view training / validation analytics
+    
+    log_rate: 20
+
+    # deploy: testing or training network
+
+    deploy: 0
+    
+    # arch: specified network architecture
+
+    arch: 0
+
+    # learning_rate: degree of learning for gradient descent
+
+    learning_rate: 0.00005
+
+    # valid_rate: determines rate of validation inside the training process
+
+    valid_rate: 1
+
+    # num_epochs: number of training iterations
+
+    num_epochs: 1000
+
+    # use_progress: start learning from previous save point
+
+    use_progress: 0
+
+#--------------------------------
+# Parameters: Inputs / Outputs
+#--------------------------------
+
+paths:
+
+    # test: path to testing dataset
+    # valid: path to validation dateset
+    # train: paht to training dataset
+    # results: path to store experiment results
+    # pre_trained_models: path to pytorch parameter cache
+    
+    #test: /develop/data/hold_out_testing_ehd
+    #valid: /develop/data/20230615_EUTKS_NewSim_NewDumbAMA_on_training_data/fold_0000/valid
+    #train: /develop/data/20230615_EUTKS_NewSim_NewDumbAMA_on_training_data/fold_0000/train
+    #results: /develop/results/chip_classifier/single_exp/20230615_EUTKS_NewSim_NewDumbAMA_on_training_data/fold_0000
+    #pre_trained_models: /develop/data/pre_trained_models 
+
+    test: /Users/slane/Documents/research/data/cifar/test
+    valid: /Users/slane/Documents/research/data/cifar/test
+    train: /Users/slane/Documents/research/data/cifar/train
+    results: /Users/slane/Documents/research/results/classifier
+    pre_trained_models: /Users/slane/Documents/research/data/pre_trained_models
