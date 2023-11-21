@@ -112,8 +112,8 @@ paths:
     #results: /develop/results/chip_classifier/single_exp/20230615_EUTKS_NewSim_NewDumbAMA_on_training_data/fold_0000
     #pre_trained_models: /develop/data/pre_trained_models 
 
-    test: /Users/slane/Documents/research/data/cifar/test
-    valid: /Users/slane/Documents/research/data/cifar/test
-    train: /Users/slane/Documents/research/data/cifar/train
-    results: /Users/slane/Documents/research/results/classifier
-    pre_trained_models: /Users/slane/Documents/research/data/pre_trained_models
+    test: /develop/data/cifar/test
+    valid: /develop/data/cifar/test
+    train: /develop/data/cifar/train
+    results: /develop/results/classifier
+    pre_trained_models: /develop/data/pre_trained_models
