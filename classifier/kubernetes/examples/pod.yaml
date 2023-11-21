@@ -11,12 +11,12 @@ spec:
       tty: True
       resources:
         limits:
-          memory: 8G
-          cpu: 6
+          memory: 12G
+          cpu: 12
           nvidia.com/gpu: 1
         requests:
-          memory: 6G
-          cpu: 6
+          memory: 12G
+          cpu: 12
           nvidia.com/gpu: 1
       volumeMounts:
         - name: classifier-code
@@ -35,13 +35,3 @@ spec:
     - name: classifier-results
       persistentVolumeClaim:
         claimName: classifier-results
-
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-          - matchExpressions:
-            - key: nvidia.com/gpu.product
-              operator: In
-              values:
-                - NVIDIA-GeForce-RTX-3090 

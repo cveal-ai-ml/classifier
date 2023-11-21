@@ -3,17 +3,25 @@ kind: Job
 metadata:
   name: train-nn
 spec:
+  backoffLimit: 0
   template:
     spec:
       restartPolicy: Never
       containers:
         - name: train-nn
           image: docker.io/ctvqfq/bunny_ai:classifier-1.0
+          ports:
+            - containerPort: 10044
+          env:
+            - name: NCCL_SOCKET_IFNAME
+              value: eth0
+            - name: NCCL_DEBUG
+              value: INFO
           command: ["/bin/sh", "-c"]
           args: ["cd /develop/code/classifier/classifier; \
                   torchrun \
                   --nnodes 1 \
-                  --nproc_per_node 2 \
+                  --nproc_per_node 1 \
                   --max_restarts 0 \
                   main.py \
                   --config configs/params.yaml \
@@ -27,11 +35,11 @@ spec:
             limits:
               memory: 64G
               cpu: 32
-              nvidia.com/gpu: 2
+              nvidia.com/gpu: 1
             requests:
               memory: 64G
               cpu: 32
-              nvidia.com/gpu: 2
+              nvidia.com/gpu: 1
           volumeMounts:
             - name: classifier-results
               mountPath: /develop/results
@@ -43,21 +51,10 @@ spec:
         - name: classifier-results
           persistentVolumeClaim:
             claimName: classifier-results
-
         - name: classifier-data
           persistentVolumeClaim:
             claimName: classifier-data
-
         - name: classifier-code
           persistentVolumeClaim:
             claimName: classifier-code
 
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                - key: nvidia.com/gpu.product
-                  operator: In
-                  values:
-                    - NVIDIA-GeForce-RTX-3090 
