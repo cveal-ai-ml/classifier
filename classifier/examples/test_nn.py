@@ -31,7 +31,7 @@ class NN(torch.nn.Module):
 if __name__ == "__main__":
 
     x = torch.rand(5, 3, 224, 244).cuda()
-    y = torch.rand(5).round().cuda()
+    y = torch.rand(5).round().long().cuda()
 
     model = NN().cuda()
     preds = model(x)
