@@ -1,6 +1,7 @@
 
 
 import torch
+import torchvision
 
 
 class NN(torch.nn.Module):
@@ -9,20 +10,16 @@ class NN(torch.nn.Module):
 
         super().__init__()
 
-        self.arch = torch.nn.Conv2d(in_channels=3,
-                                    out_channels=16,
-                                    kernel_size=3)
-
-        self.classi = torch.nn.Linear(16 * 30 * 30, 2)
+        weights = torchvision.models.ConvNeXt_Base_Weights.DEFAULT
+        self.arch = torchvision.models.convnext_base(weights=weights)
+        self.arch.features[0][0].in_channels = 3
+        self.arch.classifier[-1] = torch.nn.Linear(1024, 2)
 
         self.optimizer = torch.optim.Adam(self.parameters(), lr=0.0005)
 
     def forward(self, x):
 
-        x = self.arch(x)
-        x = x.view(x.size()[0], -1)
-
-        return self.classi(x)
+        return self.arch(x)
 
     def obj(self, preds, labels):
 
@@ -33,8 +30,8 @@ class NN(torch.nn.Module):
 
 if __name__ == "__main__":
 
-    x = torch.rand(5, 3, 32, 32).cuda()
-    y = torch.rand(5).round().long().cuda()
+    x = torch.rand(5, 3, 224, 244).cuda()
+    y = torch.rand(5).round().cuda()
 
     model = NN().cuda()
     preds = model(x)
