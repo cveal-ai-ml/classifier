@@ -59,7 +59,7 @@ Coming soon!
 
 Be sure to change parameters inside of `configs/params.yaml`: 
 - `data["num_classes"]`: the number of dataset classes
-- `paths["test"], `paths["valid"]`, `paths["train"]`: dataset paths
+- `paths["test"]`, `paths["valid"]`, `paths["train"]`: dataset paths
 
 Run a GPU enabled training job with parameters (look & change appropriately) defined at:
 - `configs/params.yaml`: general user configuration file
