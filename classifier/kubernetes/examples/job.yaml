@@ -9,7 +9,7 @@ spec:
       restartPolicy: Never
       containers:
         - name: train-nn
-          image: docker.io/ctvqfq/bunny_ai:classifier-1.0
+          image: docker.io/ctvqfq/bunny_ai:classifier-1.1
           ports:
             - containerPort: 10044
           env:

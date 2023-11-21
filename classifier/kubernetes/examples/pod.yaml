@@ -6,7 +6,7 @@ spec:
   restartPolicy: Never
   containers:
     - name: classifier-monitor
-      image: docker.io/ctvqfq/bunny_ai:classifier-1.0
+      image: docker.io/ctvqfq/bunny_ai:classifier-1.1
       stdin: True
       tty: True
       resources:
