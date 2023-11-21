@@ -45,10 +45,27 @@ Transfer data as compressed file to the pod
 
 Validate transfer inside of pod
 
-`kubectl exec -it pod_name -- /bin/bash
+```
+kubectl exec -it pod_name -- /bin/bash
+cd path_to_data_storage
+unzip some_data.zip
+```
 
 ### S3 Storage
 
+Coming soon!
 
 ## Run DL Training Job
 
+Be sure to change parameters inside of `configs/params.yaml`: 
+- `data["num_classes"]`: the number of dataset classes
+- `paths["test"], `paths["valid"]`, `paths["train"]`: dataset paths
+
+Run a GPU enabled training job with parameters (look & change appropriately) defined at:
+- `configs/params.yaml`: general user configuration file
+- `classifier/kubernetes/examples/job.yaml`: general kubernetes file
+
+```
+cd classifier/kubernetes/examples
+kubectl apply -f job.yaml
+```

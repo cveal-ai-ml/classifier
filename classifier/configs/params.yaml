@@ -57,7 +57,7 @@ dataset:
     # - percent: percent of observations to use per class
  
     use_subset:
-      enable: 1
+      enable: 0
       percent: 10
 
 #--------------------------------
