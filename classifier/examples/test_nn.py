@@ -13,7 +13,7 @@ class NN(torch.nn.Module):
                                     out_channels=16,
                                     kernel_size=3)
 
-        self.classi = torch.nn.Linear(16 * 30 * 30, 1)
+        self.classi = torch.nn.Linear(16 * 30 * 30, 2)
 
         self.optimizer = torch.optim.Adam(self.parameters(), lr=0.0005)
 
