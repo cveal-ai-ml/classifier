@@ -27,5 +27,28 @@ for current_file in *.yaml; do kubectl apply -f $current_file; done
 kubectl get pvc
 ```
 
-## Run DL Training Job:
+## Transfer Data
+
+### Option: Kubectl Data Transfer
+
+Create a pod to receive data
+
+```
+cd classifier/kubernetes/storage
+kubectl apply -f pod.yaml
+kubectl get pods
+```
+
+Transfer data as compressed file to the pod
+
+`kubectl cp some_data.zip pod_name:path_to_data_storage`
+
+Validate transfer inside of pod
+
+`kubectl exec -it pod_name -- /bin/bash
+
+### S3 Storage
+
+
+## Run DL Training Job
 

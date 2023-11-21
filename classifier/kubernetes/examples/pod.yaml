@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: classifier-monitor
+spec:
+  restartPolicy: Never
+  containers:
+    - name: classifier-monitor
+      image: docker.io/ctvqfq/bunny_ai:classifier
+      stdin: True
+      tty: True
+      resources:
+        limits:
+          memory: 8G
+          cpu: 6
+        requests:
+          memory: 6G
+          cpu: 6
+      volumeMounts:
+        - name: classifier-code
+          mountPath: /develop/code
+        - name: classifier-data
+          mountPath: /develop/data
+        - name: classifier-results
+          mountPath: /develop/results
+  volumes:
+    - name: classifier-code
+      persistentVolumeClaim:
+        claimName: classifier-code
+    - name: classifier-data
+      persistentVolumeClaim:
+        claimName: classifier-data
+    - name: classifier-results
+      persistentVolumeClaim:
+        claimName: classifier-results

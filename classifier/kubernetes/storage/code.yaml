@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: classifier-data
+  name: classifier-code
 spec:
   storageClassName: rook-cephfs
   accessModes:
   - ReadWriteMany
   resources:
     requests:
-      storage: 1T
+      storage: 2G
