@@ -13,11 +13,11 @@ spec:
         limits:
           memory: 12G
           cpu: 12
-          nvidia.com/gpu: 2
+          nvidia.com/gpu: 1
         requests:
           memory: 12G
           cpu: 12
-          nvidia.com/gpu: 2
+          nvidia.com/gpu: 1
       volumeMounts:
         - name: classifier-code
           mountPath: /develop/code
