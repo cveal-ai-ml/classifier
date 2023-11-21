@@ -25,12 +25,12 @@ spec:
                   --results /develop/results/classifier"]
           resources:
             limits:
-              memory: 40G
-              cpu: 30
+              memory: 64G
+              cpu: 32
               nvidia.com/gpu: 2
             requests:
-              memory: 40G
-              cpu: 30
+              memory: 64G
+              cpu: 32
               nvidia.com/gpu: 2
           volumeMounts:
             - name: classifier-results
