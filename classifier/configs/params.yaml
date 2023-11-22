@@ -33,7 +33,7 @@ dataset:
 
     # batch_size: sample group size of for network processing
 
-    batch_size: 64
+    batch_size: 32
     #batch_size: 16
 
     # sample_shape: decides aspects of nerual system based off of shape (c, h, w)

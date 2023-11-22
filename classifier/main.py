@@ -1,6 +1,6 @@
 """
 Author: MINDFUL
-Purpose: Create a set of re-usable general tools
+Purpose: Run Deep Learning (DL) Experiment
 """
 
 
