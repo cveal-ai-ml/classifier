@@ -46,7 +46,7 @@ def load_data_transforms(choice, interpolate, data_shape):
     elif choice == 1:
 
         if interpolate:
-            operation = album.SmallestMaxSize(max_size=max(height, width) + 32)
+            operation = album.Resize(height, width)
             transforms.append(operation)
 
         train = [album.ShiftScaleRotate(p=0.5),
@@ -68,7 +68,8 @@ def load_data_transforms(choice, interpolate, data_shape):
     elif choice == 2:
 
         if interpolate:
-            operation = album.SmallestMaxSize(max_size=max(height, width) + 32)
+            operation = album.Resize(height, width)
+            transforms.append(operation)
 
         test = [album.Normalize(mean=mean, std=std),
                 ToTensorV2()]
