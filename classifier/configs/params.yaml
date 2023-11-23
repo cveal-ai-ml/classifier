@@ -54,7 +54,7 @@ dataset:
  
     use_subset:
       enable: 1
-      percent: 10
+      percent: 1
 
 #--------------------------------
 # Parameters: Deep Learning Model
