@@ -5,120 +5,78 @@ Purpose: Run Deep Learning (DL) training & validation or testing experiment
 
 
 import torch
+import lightning as L
 
-from utils.models.logger import log_exp
-from utils.misc.general import create_folder
+from lightning.pytorch.loggers import CSVLogger
+
+from utils.misc.specific import log_exp
 from utils.models.networks import Classifier
 from utils.data.prepare import load_train, load_test
-from utils.models.support import config_hardware, load_progress
 
 
-def testing(model, datasets, params):
+def test_experiment(params):
     """
-    Create testing procedure
+    Run testing experiment for DL model
 
     Parameters:
-    - model (Classifier): deep learning model
-    - datsaets (torch.utils.data.DataLoader): relevant datasets
-    - params (dict[str, any]): network parameters
+    - params (dict[str, any]): user defined parameters
     """
 
-    # Gather: Prediction Method
-    # - Predictions for distributed parallel model requires unique referencing
+    print("\nTesting Experiment\n")
 
-    if hasattr(model, "module"):
-        cycle = model.module.test_cycle
-    else:
-        cycle = model.test_cycle
+    # Load: Testing Dataset
 
-    # Gather: Testing Dataset
-    # - For deployment, there is only the testing dataset.
-    # - Otherwise, select only the testing dataset
+    test = load_test(params["dataset"])
 
-    if isinstance(datasets, list):
-        _, _, test_data = datasets
-    else:
-        test_data = datasets
+    # Create: Model
 
-    # Testing: Model
+    model = Classifier(params["network"])
 
-    model.eval()
-    cycle(test_data, model.rank)
+    print("Experiment Progress (Testing):\n")
 
 
-def train_and_validate(model, datasets, params):
+def train_experiment(params):
     """
-    Create training & validation procedure
+    Run training & validation experiment for DL model
 
     Parameters:
-    - model (Classifier): deep learning model
-    - datsaets (torch.utils.data.DataLoader): relevant datasets
-    - params (dict[str, any]): network parameters
+    - params (dict[str, any]): user defined parameters
     """
 
-    # Gather: Prediction Method
-    # - Predictions for distributed parallel model requires unique referencing
+    print("\nTraining Experiment\n")
 
-    if hasattr(model, "module"):
-        start = model.module.epoch
-        cycle = model.module.epoch_cycle
-    else:
-        start = model.epoch
-        cycle = model.epoch_cycle
+    # Set: Global Randomization Seed
 
-    # Gather: Training & Validation Datasets
+    seed_everything(params["system"])
 
-    train_data, valid_data, _ = datasets
+    # Load: Datasets (Training, Validation)
 
-    # Run: Training & Validation
+    train, valid = load_train(params["dataset"])
 
-    for epoch in range(start, params["num_epochs"]):
+    # Create: Model
 
-        # - Run training cycle
+    model = Classifier(params["network"])
 
-        cycle(train_data, "train", model.rank)
+    # Create: Logger
 
-        # - Run validation cycle
+    exp_logger = CSVLogger(save_dir=params["paths"]["results"],
+                           version="logs")
 
-        if epoch % params["valid_rate"] == 0:
+    # Create: Trainer
 
-            model.eval()
+    num_epochs = params["network"]["num_epochs"]
 
-            cycle(valid_data, "valid", model.rank)
+    strategy = params["system"]["gpus"]["strategy"]
+    num_devices = params["system"]["gpus"]["num_devices"]
+    accelerator = params["system"]["gpus"]["accelerator"]
 
-            model.train()
+    trainer = L.Trainer(accelerator=accelerator, strategy=strategy,
+                        devices=num_devices, max_epochs=num_epochs,
+                        log_every_n_steps=20, logger=exp_logger)
 
+    # Train: Model
 
-def select_network(network_params, system_params):
-    """
-    Configure DL model for experiment
-
-    Parameters:
-    - network_params (dict[str, any]): network parameters
-    - system_params (dict[str, any]): system parameters
-
-    Returns:
-    - (Classifier): DL model
-    """
-
-    # Load: Network
-
-    model = Classifier(network_params)
-    model, rank = config_hardware(model, system_params["gpus"])
-    model.rank = rank
-
-    # Selection: Start Over || Continue
-
-    if network_params["use_progress"]:
-        model = load_progress(model, network_params["path_network"],
-                              system_params["gpus"], rank)
-
-    # Update: Model Rank
-    # - Reminder this updates the data structure in memory
-
-    network_params["rank"] = rank
-
-    return model
+    trainer.fit(model=model, train_dataloaders=train, val_dataloaders=valid)
 
 
 def seed_everything(params):
@@ -140,87 +98,16 @@ def seed_everything(params):
 
 
 def run(params):
-    """
-    Run experiment for DL model (training and validation, testing)
 
-    Parameters:
-    - params (dict[str, any]): user defined parameters
-    """
+    # Log: Experiment Setup
 
-    # Set: Global Randomization Seed
+    log_exp(params["paths"], params["system"]["gpus"])
 
-    seed_everything(params["system"])
-
-    # Selection: Testing Pipeline
+    # Selection: Experiment (Testing, Training)
 
     if int(params["network"]["deploy"]):
-
-        # - Load DL model
-
-        params["network"]["use_progress"] = 1
-        model = select_network(params["network"], params["system"])
-
-        # - Display experiment configuration
-
-        if params["network"]["rank"] == 0:
-
-            print("\nTesting Experiment")
-
-            params["paths"]["train"] = None
-            params["paths"]["valid"] = None
-            log_exp(params["paths"], params["system"]["gpu_config"])
-
-        # - Load testing dataset
-
-        test = load_test(params["dataset"])
-
-        # - Run testing procedure
-
-        if params["network"]["rank"] == 0:
-            print("\n-------------------------\n")
-            print("Experiment Progress (Testing):\n")
-
-        testing(model, test, params["network"])
-
-        if params["network"]["rank"] == 0:
-            print("\nTesting Procedure Complete\n")
-
+        test_experiment(params)
     else:
+        train_experiment(params)
 
-        # - Load DL model
-
-        model = select_network(params["network"], params["system"])
-
-        # - Display experiment configuration
-
-        if params["network"]["rank"] == 0:
-
-            print("\nTraining Experiment")
-
-            log_exp(params["paths"], params["system"]["gpus"])
-
-            create_folder(params["network"]["path_results"],
-                          not params["network"]["use_progress"])
-
-        # - Load training, validation, and testing datasets
-
-        datasets = load_train(params["dataset"])
-
-        # - Run training procedure
-
-        if params["network"]["rank"] == 0:
-            print("\n-------------------------\n")
-            print("Experiment Progress (Training):\n")
-
-        train_and_validate(model, datasets, params["network"])
-
-        # - Run testing procedure
-
-        if params["network"]["rank"] == 0:
-            print("\n-------------------------\n")
-            print("Experiment Progress (Testing):\n")
-
-        testing(model, datasets, params["network"])
-
-        if params["network"]["rank"] == 0:
-            print("\nTraining Procedure Complete\n")
+    print("\nExperiment Complete\n")

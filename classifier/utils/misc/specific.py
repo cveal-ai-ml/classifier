@@ -9,6 +9,29 @@ import sys
 import torch
 
 
+def log_exp(path_params, system_params):
+    """
+    View experiment details
+
+    Parameters:
+    - path_params (dict[str, any]): path parameters
+    - system_params (dict[str, any]): system parameters
+    """
+
+    print("\n-------------------------\n")
+
+    print("Experiment: System\n")
+    for current_key in system_params.keys():
+        print("%s : %s" % (current_key, system_params[current_key]))
+
+    print("\n-------------------------\n")
+
+    print("Experiment: Paths\n")
+    for current_key in path_params.keys():
+        print("%s : %s" % (current_key, path_params[current_key]))
+
+    print("\n-------------------------")
+
 def update_network_params(params):
     """
     Update network parameters
@@ -17,6 +40,7 @@ def update_network_params(params):
     - params (dict[str, any]): user defined parameters
     """
 
+    params["network"]["sample_shape"] = params["dataset"]["sample_shape"]
     params["network"]["num_classes"] = params["dataset"]["num_classes"]
     os.environ["TORCH_HOME"] = params["paths"]["pre_trained_models"]
 
@@ -35,33 +59,6 @@ def update_path_params(params):
     path_results = os.path.join(params["paths"]["results"], root_name)
     params["paths"]["results"] = path_results
 
-    # Gather: DL Model History
-    # - History being past model training files
-
-    history = []
-    if os.path.exists(path_results):
-        for data_file in os.listdir(path_results):
-            if ".checkpoint" in data_file:
-                history.append(data_file)
-
-    history.sort()
-
-    # Update: Transfer Learning / Training Continuation
-
-    continue_training = params["network"]["use_progress"]
-
-    if len(history) != 0 and continue_training:
-        path_history = os.path.join(path_results, history[-1])
-        params["paths"]["network"] = path_history
-        params["network"]["path_network"] = path_history
-    else:
-        params["network"]["path_network"] = ""
-
-    # Update: Addtional Necessities
-
-    params["network"]["sample_shape"] = params["dataset"]["sample_shape"]
-    params["network"]["path_results"] = path_results
-
 
 def update_dataset_params(params):
     """
@@ -75,6 +72,8 @@ def update_dataset_params(params):
     params["dataset"]["path_valid"] = params["paths"]["valid"]
     params["dataset"]["path_test"] = params["paths"]["test"]
 
+    params["dataset"]["num_workers"] = params["system"]["num_workers"]
+    params["dataset"]["batch_size"] = params["network"]["batch_size"]
 
 def update_system_params(params):
     """
@@ -84,44 +83,35 @@ def update_system_params(params):
     - params (dict[str, any]): user defined parameters
     """
 
-    gpu_enabled = params["system"]["gpus"]["enable"]
+    num_devices = "auto"
+    accelerator = "cpu"
+    strategy = "auto"
 
-    # Update: MacOS
+    if params["system"]["gpus"]["enable"]:
 
-    if sys.platform == "darwin":
-        flag = torch.backends.mps.is_available()
-        name = "MacOS M-Series"
+        # Option: MacOS Silicon GPU
 
-        num_gpus_per_node = 0
-        total_num_gpus = 0
-        num_nodes = 1
+        if sys.platform == "darwin" and torch.backends.mps.is_available():
+            num_devices = 1
+            accelerator = "mps"
 
-        if flag and gpu_enabled:
-            num_gpus_per_node = 1
-            total_num_gpus = 1
+        # Option: NVIDIA GPU
 
-    # Update: Linux & Windows
-
-    else:
-
-        if gpu_enabled:
-            name = "CUDA"
-            total_num_gpus = os.environ["WORLD_SIZE"]
-            num_gpus_per_node = torch.cuda.device_count()
-            num_nodes = int(total_num_gpus) // int(num_gpus_per_node)
         else:
-            name = "CPU"
-            num_nodes = 1
-            total_num_gpus = 0
-            num_gpus_per_node = 1
+            if "num_gpus" in params["system"]["gpus"].keys():
+                num_devices = params["system"]["gpus"]["num_devices"]
+            else:
+                num_devices = torch.cuda.device_count()
+
+            accelerator = "cuda"
+            strategy = "ddp"
 
     # Update: System Parameters
 
-    params["system"]["gpus"]["device"] = name
-    params["system"]["gpus"]["num_nodes"] = num_nodes
+    params["system"]["gpus"]["strategy"] = strategy
     params["system"]["gpus"]["platform"] = sys.platform
-    params["system"]["gpus"]["total_num_gpus"] = total_num_gpus
-    params["system"]["gpus"]["num_gpus_per_node"] = num_gpus_per_node
+    params["system"]["gpus"]["num_devices"] = num_devices
+    params["system"]["gpus"]["accelerator"] = accelerator
 
 
 def update_params(params):
@@ -176,6 +166,9 @@ def override_params(params):
     if "results" in arg_list:
         params["paths"]["results"] = args["results"]
 
+    if "cache" in arg_list:
+        params["paths"]["pre_trained_models"] = args["cache"]
+
     # Override: Dataset Parameters
 
     if "batch_size" in arg_list:
@@ -189,5 +182,13 @@ def override_params(params):
     if "arch" in arg_list:
         params["network"]["arch"] = int(args["arch"])
 
+    # Override: System Parameters
+
     if "use_gpu" in arg_list:
         params["system"]["gpus"]["enable"] = int(args["use_gpu"])
+
+    if "num_gpus" in arg_list:
+        params["system"]["gpus"]["num_devices"] = int(args["num_devices"])
+
+    if "num_workers" in arg_list:
+        params["system"]["num_workers"] = int(args["num_workers"])

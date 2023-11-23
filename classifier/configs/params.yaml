@@ -20,6 +20,7 @@ system:
 
     gpus:     
         enable: 1
+        num_devices: 1
 
 #--------------------------------
 # Parameters: Dataset Specifics
@@ -30,11 +31,6 @@ dataset:
     # num_classes: number of supervised classes
 
     num_classes: 10
-
-    # batch_size: sample group size of for network processing
-
-    batch_size: 32
-    #batch_size: 16
 
     # sample_shape: decides aspects of nerual system based off of shape (c, h, w)
     # - if interpolation below is "1" then it will transform to this spatial shape
@@ -57,7 +53,7 @@ dataset:
     # - percent: percent of observations to use per class
  
     use_subset:
-      enable: 0
+      enable: 1
       percent: 10
 
 #--------------------------------
@@ -65,10 +61,6 @@ dataset:
 #--------------------------------
 
 network:
-
-    # log_rate: how often to view training / validation analytics
-    
-    log_rate: 20
 
     # deploy: testing or training network
 
@@ -78,13 +70,13 @@ network:
 
     arch: 0
 
+    # batch_size: sample group size of for network processing
+
+    batch_size: 32
+
     # learning_rate: degree of learning for gradient descent
 
-    learning_rate: 0.00005
-
-    # valid_rate: determines rate of validation inside the training process
-
-    valid_rate: 1
+    learning_rate: 0.0005
 
     # num_epochs: number of training iterations
 

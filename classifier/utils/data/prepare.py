@@ -78,7 +78,7 @@ def gather_data(path, file_types=[".png", ".jpg"]):
     return Dataset(all_samples, all_labels)
 
 
-def load_datasets_train(path_train, path_valid, path_test):
+def load_datasets_train(path_train, path_valid):
     """
     Load datasets for DL training
     This includes a dataset for training, validation, and testing
@@ -86,7 +86,6 @@ def load_datasets_train(path_train, path_valid, path_test):
     Parameters:
     - path_train (str): path to training dataset folder
     - path_valid (str): path to validation dataset folder
-    - path_test (str): path to testing dataset folder
 
     Returns:
     - (tuple[Dataset]): relevant supervised learning datasets
@@ -94,9 +93,8 @@ def load_datasets_train(path_train, path_valid, path_test):
 
     train = gather_data(path_train)
     valid = gather_data(path_valid)
-    test = gather_data(path_test)
 
-    return (train, valid, test)
+    return (train, valid)
 
 
 def load_datasets_test(path_test):
@@ -132,7 +130,9 @@ def load_test(params):
                                       params["sample_shape"])
 
     test = Pytorch_Format(test, transforms, "valid")
-    test = DataLoader(test, batch_size=params["batch_size"], shuffle=0)
+
+    test = DataLoader(test, batch_size=params["batch_size"],
+                      num_workers=params["num_workers"], shuffle=0)
 
     return test
 
@@ -148,9 +148,8 @@ def load_train(params):
     - (tuple[torch.util.data.DataLoaders]): relevant datasets
     """
 
-    train, valid, test = load_datasets_train(params["path_train"],
-                                             params["path_valid"],
-                                             params["path_test"])
+    train, valid = load_datasets_train(params["path_train"],
+                                       params["path_valid"])
 
     if params["use_subset"]["enable"]:
         train = gather_subset(train, params["use_subset"]["percent"])
@@ -161,10 +160,13 @@ def load_train(params):
 
     train = Pytorch_Format(train, transforms, "train")
     valid = Pytorch_Format(valid, transforms, "valid")
-    test = Pytorch_Format(test, transforms, "valid")
 
-    train = DataLoader(train, batch_size=params["batch_size"], shuffle=1)
-    valid = DataLoader(valid, batch_size=params["batch_size"], shuffle=1)
-    test = DataLoader(test, batch_size=params["batch_size"], shuffle=0)
+    train = DataLoader(train, persistent_workers=True,
+                       batch_size=int(params["batch_size"]),
+                       num_workers=params["num_workers"], shuffle=1)
 
-    return (train, valid, test)
+    valid = DataLoader(valid, persistent_workers=True,
+                       batch_size=int(params["batch_size"]),
+                       num_workers=params["num_workers"], shuffle=0)
+
+    return (train, valid)
