@@ -9,9 +9,9 @@ import lightning as L
 
 from lightning.pytorch.loggers import CSVLogger
 
-from utils.models.networks import Classifier
 from utils.data.prepare import load_train, load_test
 from utils.misc.specific import log_exp, clear_logfile
+from utils.models.support import load_model, model_inference
 
 
 def test_experiment(params):
@@ -30,7 +30,14 @@ def test_experiment(params):
 
     # Create: Model
 
-    model = Classifier(params["network"])
+    model = load_model(params, pre_trained=True)
+    model.eval()
+
+    # Evaluate: Model
+    # - This process only supports 1 GPU
+
+    accelerator = params["system"]["gpus"]["accelerator"]
+    model_inference(test, model, accelerator, params["paths"]["results"])
 
     print("Experiment Progress (Testing):\n")
 
@@ -55,7 +62,7 @@ def train_experiment(params):
 
     # Create: Model
 
-    model = Classifier(params["network"])
+    model = load_model(params, pre_trained=False)
 
     # Create: Logger
 

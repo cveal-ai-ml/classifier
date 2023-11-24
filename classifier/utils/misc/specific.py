@@ -46,6 +46,7 @@ def log_exp(path_params, system_params):
 
     print("\n-------------------------")
 
+
 def update_network_params(params):
     """
     Update network parameters
@@ -89,6 +90,7 @@ def update_dataset_params(params):
     params["dataset"]["num_workers"] = params["system"]["num_workers"]
     params["dataset"]["batch_size"] = params["network"]["batch_size"]
 
+
 def update_system_params(params):
     """
     Update system parameters and validate GPU acceleration
@@ -116,6 +118,9 @@ def update_system_params(params):
                 num_devices = params["system"]["gpus"]["num_devices"]
             else:
                 num_devices = torch.cuda.device_count()
+
+            if params["network"]["deploy"]:
+                num_devices = 1
 
             accelerator = "cuda"
             strategy = "ddp"
