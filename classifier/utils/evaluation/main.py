@@ -10,13 +10,13 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from dash import html, dcc, callback, Input, Output
 
-from utils.data import load_loss, median_filter
+from utils.data import load_loss, format_data
 
 
 @callback(Output("live-loss", "figure"),
           [Input("interval-component", "n_intervals"),
            Input(component_id="dd_loss", component_property="value")])
-def show_loss(n, dd_name):
+def show_loss(n, dd_name, font_size=20):
     """
     Visualize training and validation loss all models
 
@@ -27,63 +27,84 @@ def show_loss(n, dd_name):
     - (plotly.express.line): Updated figure
     """
 
-    x_tag = "iteration"
-    y_tag = "total"
+    fig_height = 800
+
+    x_tag = "step"
+    y_title = "Error"
+    x_title = "Iterations"
+    all_titles = ["Train Loss", "Valid Loss", "Valid Accuracy"]
+    all_y_tags = ["train_error_step", "valid_error_step", "accuracy_step"]
+
+    font = dict(family="Courier New, monospace",
+                size=font_size, color="RebeccaPurple")
 
     # Gather: Training Results (Training, Validation)
 
-    train = load_loss(path_root, "train")
+    data = load_loss(path_root)
 
+    use_filter = 0
     if dd_name == "iterations (median filter)":
-        train = median_filter(train)
-    elif dd_name == "epochs":
-        train = median_filter(train, t_tag="epoch")
-        x_tag = "epoch"
+        use_filter = 1
 
-    fig_train = go.Figure()
-    for current_key in train:
-        x_vals = train[current_key][x_tag]
-        y_vals = train[current_key][y_tag]
-        fig_train.add_trace(go.Scatter(x=x_vals, y=y_vals,
-                                       mode="lines", name=current_key))
+    # Gather: Individual Plots
 
-        fig_train.update_layout(xaxis_title="Iterations",
-                                yaxis_title="Measure")
+    figures = []
+    max_values = []
+    for y_tag in all_y_tags:
 
-    try:
+        fig = go.Figure()
+        for current_key in data:
 
-        valid = load_loss(path_root, "valid")
+            try:
+                data[current_key][y_tag]
+            except Exception:
+                continue
 
-        fig_valid = go.Figure()
-        for current_key in valid:
-            x_vals = train[current_key][x_tag]
-            y_vals = train[current_key][y_tag]
-            fig_valid.add_trace(go.Scatter(x=x_vals, y=y_vals,
-                                mode="lines", name=current_key))
+            y_vals, x_vals = format_data(data[current_key],
+                                         y_tag, x_tag, use_filter)
 
-            fig_valid.update_layout(xaxis_title="Iterations",
-                                    yaxis_title="Measure")
+            fig.add_trace(go.Scatter(x=x_vals, y=y_vals,
+                                     mode="lines", name=current_key))
 
-        figures = [fig_train, fig_valid]
+            max_values.append(max(y_vals))
 
-        all_titles = ["Train Loss", "Valid Loss"]
+        figures.append(fig)
 
-        fig = make_subplots(rows=len(figures), cols=1, subplot_titles=all_titles)
+    # Plot: Results (Subplot)
 
-        for i, figure in enumerate(figures):
-            for trace in range(len(figure["data"])):
-                if i != len(figures) - 1:
-                    figure["data"][trace].showlegend = False
-                fig.append_trace(figure["data"][trace], row=i+1, col=1)
+    indices = [1 if len(ele["data"]) != 0 else 0 for ele in figures]
 
-            fig["layout"]["xaxis%s" % (i+1)]["title"] = "Iterations"
-            fig["layout"]["yaxis%s" % (i+1)]["title"] = "Error"
+    if sum(indices) == 0:
+        fig = go.Figure()
+    else:
+        if sum(indices) == 1:
+            height = fig_height // 1.5
+            index = indices.index(1)
+            fig = figures[index]
+            fig.update_layout(title_text=all_titles[index], title_x=0.5,
+                              xaxis_title=x_title, yaxis_title=y_title)
+        else:
+            height = fig_height
+            fig = make_subplots(rows=len(figures), cols=1,
+                                x_title=x_title, y_title=y_title,
+                                subplot_titles=all_titles,
+                                vertical_spacing=0.1)
 
-        fig.update_layout(autosize=False, height=1000)
+            for i, figure in enumerate(figures):
+                for trace in range(len(figure["data"])):
+                    if i != len(figures) - 1:
+                        figure["data"][trace].showlegend = False
+                    fig.append_trace(figure["data"][trace], row=i+1, col=1)
 
-    except Exception:
+                    # fig["layout"]["xaxis%s" % (i+1)]["title"] = "Iterations"
+                    # fig["layout"]["yaxis%s" % (i+1)]["title"] = "Error"
 
-        fig = fig_train
+        fig.update_annotations(font=font)
+        fig.update_layout(font=font, height=height)
+
+        for i, value in enumerate(max_values):
+            y_lim = [-0.05, value + value * 0.1]
+            fig.update_yaxes(range=y_lim, row=i+1, col=1)
 
     return fig
 
@@ -94,7 +115,7 @@ if __name__ == "__main__":
 
     # Create: Dashboard Layout
 
-    dd_loss = ["iterations", "iterations (median filter)", "epochs"]
+    dd_loss = ["iterations", "iterations (median filter)"]
 
     style = {"textAlign": "center", "marginTop": 40, "marginBottom": 40}
 

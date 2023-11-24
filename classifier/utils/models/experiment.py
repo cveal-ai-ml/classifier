@@ -9,9 +9,9 @@ import lightning as L
 
 from lightning.pytorch.loggers import CSVLogger
 
-from utils.misc.specific import log_exp
 from utils.models.networks import Classifier
 from utils.data.prepare import load_train, load_test
+from utils.misc.specific import log_exp, clear_logfile
 
 
 def test_experiment(params):
@@ -59,8 +59,9 @@ def train_experiment(params):
 
     # Create: Logger
 
+    clear_logfile(params["paths"]["results"])
     exp_logger = CSVLogger(save_dir=params["paths"]["results"],
-                           version="logs")
+                           version="training")
 
     # Create: Trainer
 
@@ -72,7 +73,7 @@ def train_experiment(params):
 
     trainer = L.Trainer(accelerator=accelerator, strategy=strategy,
                         devices=num_devices, max_epochs=num_epochs,
-                        log_every_n_steps=20, logger=exp_logger)
+                        log_every_n_steps=1, logger=exp_logger)
 
     # Train: Model
 

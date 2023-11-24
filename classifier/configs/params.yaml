@@ -72,7 +72,7 @@ network:
 
     # batch_size: sample group size of for network processing
 
-    batch_size: 32
+    batch_size: 16
 
     # learning_rate: degree of learning for gradient descent
 

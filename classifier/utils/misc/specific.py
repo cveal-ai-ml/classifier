@@ -9,6 +9,20 @@ import sys
 import torch
 
 
+def clear_logfile(path, filename="metrics.csv"):
+    """
+    Clears prior log file of specific name
+
+    Parameters:
+    - path (str): path to log folder
+    - filename (str): target log file
+    """
+
+    path_file = os.path.join(path, "lightning_logs", "training", filename)
+    if os.path.exists(path_file):
+        os.remove(path_file)
+
+
 def log_exp(path_params, system_params):
     """
     View experiment details
