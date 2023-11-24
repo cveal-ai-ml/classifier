@@ -52,6 +52,7 @@ def show_loss(n, dd_name, font_size=20):
     max_values = []
     for y_tag in all_y_tags:
 
+        local_values = []
         fig = go.Figure()
         for current_key in data:
 
@@ -66,8 +67,9 @@ def show_loss(n, dd_name, font_size=20):
             fig.add_trace(go.Scatter(x=x_vals, y=y_vals,
                                      mode="lines", name=current_key))
 
-            max_values.append(max(y_vals))
+            local_values.append(max(y_vals))
 
+        max_values.append(max(local_values))
         figures.append(fig)
 
     # Plot: Results (Subplot)
