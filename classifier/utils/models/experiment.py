@@ -39,8 +39,6 @@ def test_experiment(params):
     accelerator = params["system"]["gpus"]["accelerator"]
     model_inference(test, model, accelerator, params["paths"]["results"])
 
-    print("Experiment Progress (Testing):\n")
-
 
 def train_experiment(params):
     """

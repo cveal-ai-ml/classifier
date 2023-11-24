@@ -74,6 +74,10 @@ def update_path_params(params):
     path_results = os.path.join(params["paths"]["results"], root_name)
     params["paths"]["results"] = path_results
 
+    if params["network"]["deploy"]:
+        params["paths"]["train"] = "None"
+        params["paths"]["valid"] = "None"
+
 
 def update_dataset_params(params):
     """

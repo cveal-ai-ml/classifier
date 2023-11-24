@@ -48,7 +48,6 @@ def model_inference(data, model, accelerator, path_save):
 
         # - Organize results
 
-        results = {}
         results["preds"].append(preds)
         results["truths"].append(labels)
         results["filenames"].append(filenames)
@@ -78,8 +77,6 @@ def load_model(params, pre_trained):
     path_root = os.path.join(params["paths"]["results"],
                              "lightning_logs", "training")
 
-    model = Classifier(params["network"])
-
     # Load: Pre-Trained Model Parameters
 
     if pre_trained:
@@ -102,7 +99,11 @@ def load_model(params, pre_trained):
 
         # - Load the history files
 
-        model = model.load_from_checkpoint(checkpoint_path=path_model,
-                                           hparams_file=path_params)
+        model = Classifier.load_from_checkpoint(checkpoint_path=path_model,
+                                                hparams_file=path_params,
+                                                params=params["network"])
+    else:
+
+        model = Classifier(params["network"])
 
     return model
