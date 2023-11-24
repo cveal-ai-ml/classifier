@@ -44,7 +44,7 @@ def model_inference(data, model, accelerator, path_save):
         # - Evaluate dataset samples
 
         with torch.no_grad():
-            preds = model(samples).detach()
+            preds = model(samples).detach().cpu()
 
         # - Organize results
 
