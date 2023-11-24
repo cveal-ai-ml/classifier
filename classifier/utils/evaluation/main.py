@@ -50,7 +50,7 @@ def show_loss(n, dd_name, font_size=20):
 
     figures = []
     max_values = []
-    for y_tag in all_y_tags:
+    for i, y_tag in enumerate(all_y_tags):
 
         local_values = []
         fig = go.Figure()
@@ -64,8 +64,8 @@ def show_loss(n, dd_name, font_size=20):
             y_vals, x_vals = format_data(data[current_key],
                                          y_tag, x_tag, use_filter)
 
-            fig.add_trace(go.Scatter(x=x_vals, y=y_vals,
-                                     mode="lines", name=current_key))
+            fig.add_trace(go.Scatter(x=x_vals, y=y_vals, mode="lines",
+                                     name=all_titles[i] + " " + current_key))
 
             local_values.append(max(y_vals))
 
@@ -94,8 +94,6 @@ def show_loss(n, dd_name, font_size=20):
 
             for i, figure in enumerate(figures):
                 for trace in range(len(figure["data"])):
-                    if i != len(figures) - 1:
-                        figure["data"][trace].showlegend = False
                     fig.append_trace(figure["data"][trace], row=i+1, col=1)
 
                     # fig["layout"]["xaxis%s" % (i+1)]["title"] = "Iterations"
@@ -130,7 +128,7 @@ if __name__ == "__main__":
                               dcc.Dropdown(dd_loss, dd_loss[0], id="dd_loss"),
                               dcc.Graph(id="live-loss"),
                               dcc.Interval(id="interval-component",
-                                           interval=5*1000,
+                                           interval=1*20000,
                                            n_intervals=0)
                               ]
                           )
