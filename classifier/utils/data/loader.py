@@ -60,7 +60,7 @@ class Pytorch_Format(torch.utils.data.Dataset):
         - (np.ndarray[float]): loaded image
         """
 
-        return np.asarray(Image.open(data))
+        return np.asarray(Image.open(data).convert("RGB"))
 
     def __getitem__(self, index):
         """

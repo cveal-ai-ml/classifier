@@ -143,7 +143,7 @@ class Classifier(L.LightningModule):
         loss = self.objective(preds, labels)
 
         self.log("train_error", loss, batch_size=self.batch_size,
-                 on_step=True, on_epoch=True)
+                 on_step=True, on_epoch=True, sync_dist=True)
 
         return loss
 
@@ -169,7 +169,7 @@ class Classifier(L.LightningModule):
         loss = self.objective(preds, labels)
 
         self.log("valid_error", loss, batch_size=self.batch_size,
-                 on_step=True, on_epoch=True)
+                 on_step=True, on_epoch=True, sync_dist=True)
 
         # Calculate: Confusion Matrix Analytics
 
@@ -179,7 +179,7 @@ class Classifier(L.LightningModule):
         for current_key in measures.keys():
             score = measures[current_key](preds, labels)
             self.log(current_key, score, batch_size=self.batch_size,
-                     on_step=True, on_epoch=True)
+                     on_step=True, on_epoch=True, sync_dist=True)
 
     def forward(self, samples):
         """
