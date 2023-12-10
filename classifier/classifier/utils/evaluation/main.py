@@ -27,13 +27,16 @@ def show_loss(n, dd_name, font_size=20):
     - (plotly.express.line): Updated figure
     """
 
-    fig_height = 800
+    fig_height = 3000
 
     x_tag = "step"
     y_title = "Error"
     x_title = "Iterations"
-    all_titles = ["Train Loss", "Valid Loss", "Valid Accuracy"]
-    all_y_tags = ["train_error_step", "valid_error_step", "accuracy_step"]
+    all_titles = ["Train Loss", "Valid Loss",
+                  "Valid Accuracy", "LR - AdamW"]
+
+    all_y_tags = ["train_error_step", "valid_error_step",
+                  "accuracy_step", "lr-AdamW"]
 
     font = dict(family="Courier New, monospace",
                 size=font_size, color="RebeccaPurple")
@@ -46,20 +49,24 @@ def show_loss(n, dd_name, font_size=20):
     if dd_name == "iterations (median filter)":
         use_filter = 1
 
+    elif dd_name == "epoch":
+        use_filter = 2
+        x_tag = "epoch"
+        x_title = "Epochs"
+        all_y_tags = [ele.replace("step", x_tag) for ele in all_y_tags]
+
     # Gather: Individual Plots
 
     figures = []
     max_values = []
     for i, y_tag in enumerate(all_y_tags):
 
-        local_values = []
         fig = go.Figure()
+        local_values = []
         for current_key in data:
 
-            try:
-                data[current_key][y_tag]
-            except Exception:
-                continue
+            if "lr" in y_tag:
+                x_tag = "epoch"
 
             y_vals, x_vals = format_data(data[current_key],
                                          y_tag, x_tag, use_filter)
@@ -69,7 +76,13 @@ def show_loss(n, dd_name, font_size=20):
 
             local_values.append(max(y_vals))
 
-        max_values.append(max(local_values))
+        if len(local_values) == 0:
+            value = 1
+        else:
+            value = max(local_values)
+
+        max_values.append(value)
+
         figures.append(fig)
 
     # Plot: Results (Subplot)
@@ -90,19 +103,19 @@ def show_loss(n, dd_name, font_size=20):
             fig = make_subplots(rows=len(figures), cols=1,
                                 x_title=x_title, y_title=y_title,
                                 subplot_titles=all_titles,
-                                vertical_spacing=0.1)
+                                vertical_spacing=0.04)
 
             for i, figure in enumerate(figures):
                 for trace in range(len(figure["data"])):
-                    fig.append_trace(figure["data"][trace], row=i+1, col=1)
 
-                    # fig["layout"]["xaxis%s" % (i+1)]["title"] = "Iterations"
-                    # fig["layout"]["yaxis%s" % (i+1)]["title"] = "Error"
+                    fig.append_trace(figure["data"][trace], row=i+1, col=1)
 
         fig.update_annotations(font=font)
         fig.update_layout(font=font, height=height)
 
         for i, value in enumerate(max_values):
+            if "lr" in all_y_tags[i]:
+                continue
             y_lim = [-0.05, value + value * 0.1]
             fig.update_yaxes(range=y_lim, row=i+1, col=1)
 
@@ -111,11 +124,11 @@ def show_loss(n, dd_name, font_size=20):
 
 if __name__ == "__main__":
 
-    path_root = "/Users/slane/Documents/research/results/classifier"
+    path_root = "/develop/results/classifier/many_exps/cifar"
 
     # Create: Dashboard Layout
 
-    dd_loss = ["iterations", "iterations (median filter)"]
+    dd_loss = ["iterations", "iterations (median filter)", "epoch"]
 
     style = {"textAlign": "center", "marginTop": 40, "marginBottom": 40}
 
@@ -124,11 +137,11 @@ if __name__ == "__main__":
     app.layout = html.Div(id="parent",
                           children=[
                               html.H1(id="train", style=style,
-                                      children="Train Loss"),
+                                      children="Classifier Analytics"),
                               dcc.Dropdown(dd_loss, dd_loss[0], id="dd_loss"),
                               dcc.Graph(id="live-loss"),
                               dcc.Interval(id="interval-component",
-                                           interval=1*20000,
+                                           interval=1*60000,
                                            n_intervals=0)
                               ]
                           )

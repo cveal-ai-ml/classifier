@@ -1,0 +1,11 @@
+build:
+  stage: build
+  tags:
+    - dind
+  variables:
+    FILE: build/.
+    CONTAINER_IMAGE: gitlab.cgi.missouri.edu:4567/nvesd/classifier/gen:latest
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t "${CONTAINER_IMAGE}" "${FILE}"
+    - docker push "${CONTAINER_IMAGE}"

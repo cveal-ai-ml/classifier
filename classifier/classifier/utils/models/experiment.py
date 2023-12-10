@@ -8,6 +8,7 @@ import torch
 import lightning as L
 
 from lightning.pytorch.loggers import CSVLogger
+from lightning.pytorch.callbacks import LearningRateMonitor
 
 from utils.data.prepare import load_train, load_test
 from utils.misc.specific import log_exp, clear_logfile
@@ -76,7 +77,10 @@ def train_experiment(params):
     num_devices = params["system"]["gpus"]["num_devices"]
     accelerator = params["system"]["gpus"]["accelerator"]
 
-    trainer = L.Trainer(accelerator=accelerator, strategy=strategy,
+    lr_monitor = LearningRateMonitor(logging_interval="epoch")
+
+    trainer = L.Trainer(callbacks=[lr_monitor],
+                        accelerator=accelerator, strategy=strategy,
                         devices=num_devices, max_epochs=num_epochs,
                         log_every_n_steps=1, logger=exp_logger)
 

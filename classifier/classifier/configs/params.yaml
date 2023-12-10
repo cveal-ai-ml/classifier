@@ -16,7 +16,7 @@ system:
     # gpu_config: GPU configuration, formatted as [On (1) / Off (0), GPU indices]
     # num_workers: CPU workers for explicit data retrival. (set <= number cpu_cores)
 
-    num_workers: 8
+    num_workers: 32
 
     gpus:     
         enable: 1
@@ -30,7 +30,7 @@ dataset:
 
     # num_classes: number of supervised classes
 
-    num_classes: 10
+    num_classes: 2
 
     # sample_shape: decides aspects of nerual system based off of shape (c, h, w)
     # - if interpolation below is "1" then it will transform to this spatial shape
@@ -53,7 +53,7 @@ dataset:
     # - percent: percent of observations to use per class
  
     use_subset:
-      enable: 1
+      enable: 0
       percent: 1
 
 #--------------------------------
@@ -61,6 +61,11 @@ dataset:
 #--------------------------------
 
 network:
+
+    # optimizer: optimization strategy
+    # - "adam", "sgd", or "adamw"
+
+    optimizer: adamw
 
     # deploy: testing or training network
 
@@ -72,15 +77,15 @@ network:
 
     # batch_size: sample group size of for network processing
 
-    batch_size: 16
+    batch_size: 256
 
     # learning_rate: degree of learning for gradient descent
 
-    learning_rate: 0.0005
+    learning_rate: 0.0001
 
     # num_epochs: number of training iterations
 
-    num_epochs: 1000
+    num_epochs: 100
 
     # use_progress: start learning from previous save point
 
@@ -98,14 +103,8 @@ paths:
     # results: path to store experiment results
     # pre_trained_models: path to pytorch parameter cache
     
-    #test: /develop/data/hold_out_testing_ehd
-    #valid: /develop/data/20230615_EUTKS_NewSim_NewDumbAMA_on_training_data/fold_0000/valid
-    #train: /develop/data/20230615_EUTKS_NewSim_NewDumbAMA_on_training_data/fold_0000/train
-    #results: /develop/results/chip_classifier/single_exp/20230615_EUTKS_NewSim_NewDumbAMA_on_training_data/fold_0000
-    #pre_trained_models: /develop/data/pre_trained_models 
-
     test: /develop/data/cifar/test
     valid: /develop/data/cifar/test
     train: /develop/data/cifar/train
-    results: /develop/results/classifier
-    pre_trained_models: /develop/data/pre_trained_models
+    results: /develop/results/classifer/single_exp/cifar
+    pre_trained_models: /develop/data/pre_trained_models 

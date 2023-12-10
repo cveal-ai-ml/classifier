@@ -70,11 +70,15 @@ def update_path_params(params):
 
     # Update: Path Results
 
-    root_name = str(params["network"]["arch"])
+    arch = str(params["network"]["arch"]) 
+    opti = params["network"]["optimizer"]
+
+    root_name = "%s_%s" % (arch, opti)
+
     path_results = os.path.join(params["paths"]["results"], root_name)
     params["paths"]["results"] = path_results
 
-    if params["network"]["deploy"]:
+    if int(params["network"]["deploy"]):
         params["paths"]["train"] = "None"
         params["paths"]["valid"] = "None"
 
@@ -204,6 +208,9 @@ def override_params(params):
 
     if "arch" in arg_list:
         params["network"]["arch"] = int(args["arch"])
+
+    if "optimizer" in arg_list:
+        params["network"]["optimizer"] = args["optimizer"]
 
     # Override: System Parameters
 
